@@ -36,7 +36,7 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
    Use the issue number to label your branch and future commits.
 1. Create `feature/*` branch for your feature that forks 
    off the `main` branch
-1. Add the [feature-test.yaml](.github/workflows/feature-test.yaml) 
+1. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
    Github Action Workflow to your new branch
 1. After finishing improving Solr, run `./gradlew tidy`
    to properly format your source code
@@ -45,4 +45,13 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 
 ### Releasing a bugfixed version
 
-tbd
+1. Fork the Solr minor version release branch, e.g. `branch_9_5`
+   into our fork repository
+1. Create a bugfix branch `candiates/branch_9_5` branching off
+   the Solr minor release branch
+1. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
+   Github Action Workflow to your new branch
+1. Apply all fixes from the `features/**` branches to our 
+   candidate branch and make sure things integrate well (`./gradlew check`)
+1. Create and push a release tag `9.5.0`. This will trigger
+   a release build and promote the tag to a release version

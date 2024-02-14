@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - 'feature/**'
+      - 'feature/**'
+      - 'candidate/**'
+    paths-ignore:
+      - '*.md'
+      - '.github/**'
 
 jobs:
   check:
