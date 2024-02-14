@@ -1,9 +1,10 @@
 name: Gradle Check
 
-on: 
+on:
+  workflow_dispatch:
   push:
     branches:
-    - 'feature/*'
+    - 'feature/**'
 
 jobs:
   check:
