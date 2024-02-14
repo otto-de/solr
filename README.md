@@ -51,7 +51,7 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
    the Solr minor release branch
 1. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
    Github Action Workflow to your new branch
-1. Apply all fixes from the `features/**` branches to our 
+1. Cherry pick all fixes from the `features/**` branches to our 
    candidate branch and make sure things integrate well (`./gradlew check`)
-1. Create and push a release tag `9.5.0`. This will trigger
-   a release build and promote the tag to a release version
+1. Create and push your changes to the candidate branch. This will
+   trigger a last `./gradlew check`
