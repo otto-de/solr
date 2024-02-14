@@ -6,15 +6,43 @@ repository to file pull requests against the upstream repo. It
 furthermore contains bugfixes and improvements that not yet made
 it to the upstream repository.
 
-## Improvements and bugfixes
+## 📦 Improvements and bugfixes
 
-> ✅ checked issues have been successfully merged to upstream\
-> ⏳ waiting for approval\
-> ✨ new fix, need to filed and pull requested
 
 * ✅ [SOLR-15377](https://issues.apache.org/jira/browse/SOLR-15377) Do not swallow exceptions thrown in replication
 * ✅ [SOLR-16489](https://issues.apache.org/jira/browse/SOLR-16489) CaffeineCache puts thread into infinite loop
 * ✅ [SOLR-16515](https://issues.apache.org/jira/browse/SOLR-16515) Remove synchronized access to cachedOrdMaps in SlowCompositeReaderWrapper
+* ⏳ [SOLR-10059](https://issues.apache.org/jira/browse/SOLR-10059) In SolrCloud, every fq added via `<lst name="appends">` 
+     is computed twice. This breaks the collapse filter if configured.
 * ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores
-* ⏳ [SOLR-10059](https://issues.apache.org/jira/browse/SOLR-10059) In SolrCloud, every fq added via `<lst name="appends">` is computed twice.
 
+> ✅ checked issues have been successfully merged to upstream\
+> ⏳ waiting for approval\
+> ✨ new fix, needs to filed and pull requested
+
+## 👩‍💻 Working with this fork
+
+Our goal is to get all improvements merged into upstream. We'll file all our
+pull requests based on this repository. Before doing any work, please
+familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr/blob/main/CONTRIBUTING.md) guidelines.
+
+
+### ✨ Adding / working on a new improvement or fix
+
+> Do not pollute `.gitignore` settings with your local specialities. 
+> Use `.git/info/exclude` for local git ignores
+
+1. If not yet present, open an issue in the [Solr Jira Bugtracker](https://issues.apache.org/jira/projects/SOLR/issues/SOLR-16781?filter=allopenissues).
+   Use the issue number to label your branch and future commits.
+1. Create `feature/*` branch for your feature that forks 
+   off the `main` branch
+1. Add the [feature-test.yaml](.github/workflows/feature-test.yaml) 
+   Github Action Workflow to your new branch
+1. After finishing improving Solr, run `./gradlew tidy`
+   to properly format your source code
+1. Check all formalities via `./gradlew check`
+1. Push your new branch
+
+### Releasing a bugfixed version
+
+tbd
