@@ -119,6 +119,7 @@ jobs:
           context: solr/packaging/build/distributions/context
           tags: |
             ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository }}:${{ env.VERSION_FULL }}
 
   release:
     name: create release in GitHub
