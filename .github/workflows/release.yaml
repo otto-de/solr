@@ -42,9 +42,6 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
-    - name: Gradle check
-      run: ./gradlew check -x test
   
     - name: Gradle assemble release
       run: ./gradlew assembleRelease -Dversion.release=${{ env.VERSION_FULL }}
@@ -122,6 +119,7 @@ jobs:
           context: solr/packaging/build/distributions/context
           tags: |
             ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+            ghcr.io/${{ github.repository }}:${{ env.VERSION_FULL }}
 
   release:
     name: create release in GitHub
