@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       solr_version:
-        description: 'The full release version'
+        description: 'The upstream Solr release version'
         required: true
         default: '9.5.0'
         type: string
       patch_version:
-        description: 'The full release version'
+        description: 'The internal patch version suffix version'
         required: true
         default: 1
         type: number
