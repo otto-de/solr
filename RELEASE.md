@@ -72,9 +72,12 @@ export SOLR_DOCKER_DIST=full
 Use the prepared Docker Context to build a multi-arch image using Docker `buildx`:
 
 ```bash
+mkdir -p solr/packaging/build/distributions/context
+tar xzvf solr/packaging/build/distributions/solr-${VERSION_FULL}.tgz \
+    -C solr/packaging/build/distributions/context
 docker buildx build \
     --platform linux/arm64/v8,linux/amd64 \
-    -f solr-${VERSION_FULL}/docker/Dockerfile \
+    -f solr/packaging/build/distributions/context/solr-${VERSION_FULL}/docker/Dockerfile \
     --build-arg BASE_IMAGE=${SOLR_DOCKER_BASE_IMAGE} \
-    - < solr/packaging/build/distributions/solr-${VERSION_FULL}.tgz
+    solr/packaging/build/distributions/context/
 ```
