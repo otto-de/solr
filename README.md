@@ -20,6 +20,32 @@ it to the upstream repository.
 > ⏳ waiting for approval\
 > ✨ new fix, needs to filed and pull requested
 
+## 👩‍💻 Using this fork repository
+
+To incorporate the bugfixed sources and Java releases in your project,
+add the GitHub Maven Package Repository to your Maven or Gradle file.
+
+```xml
+<project>
+  <repositories>
+    <repository>
+      <id>otto-de-solr</id>
+      <name>Otto.de Solr Fork</name>
+      <url>https://maven.pkg.github.com/otto-de/solr</url>
+    </repository>
+  </repositories>
+</project>
+```
+
+Docker images are published for both `arm64` and `amd64` architectures:
+
+```bash
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.5.0
+```
+
+> There is no `latest` tag available for the Docker images
+
+
 ## 👩‍💻 Working with this fork
 
 Our goal is to get all improvements merged into upstream. We'll file all our
