@@ -43,7 +43,7 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 1. Check all formalities via `./gradlew check`
 1. Push your new branch
 
-### Releasing a bugfixed version
+### 🚀 Releasing a bugfixed version
 
 1. Fork the Solr minor version release branch, e.g. `branch_9_5`
    into our fork repository
