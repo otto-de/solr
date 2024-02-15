@@ -102,13 +102,19 @@ jobs:
       - name: Gradle pre-build Docker image
         run: ./gradlew solr:docker:docker -Dversion.release=${{ env.VERSION_FULL }} -Dmanifest.username=${{ github.actor }}
       
+      - name: Prepare multi-arch Docker build
+        run: |
+          mkdir -p solr/packaging/build/distributions/context
+          tar xzvf solr/packaging/build/distributions/solr-${VERSION_FULL}.tgz \
+              -C solr/packaging/build/distributions/context
+
       - name: Build and push to DockerHub registry
         uses: docker/build-push-action@v5
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          file: solr-${{ env.VERSION_FULL }}/docker/Dockerfile
-          context: solr/packaging/build/distributions/solr-${{ env.VERSION_FULL }}.tgz
+          file: solr/packaging/build/distributions/context/solr-${{ env.VERSION_FULL }}/docker/Dockerfile
+          context: solr/packaging/build/distributions/context
           tags: |
             ghcr.io/${{ github.repository }}:${{ env.VERSION }}
 
