@@ -8,17 +8,15 @@ it to the upstream repository.
 
 ## 📦 Improvements and bugfixes
 
-* ✅ [SOLR-15377](https://issues.apache.org/jira/browse/SOLR-15377) Do not swallow exceptions 
-  thrown in replication
-* ✅ [SOLR-16489](https://issues.apache.org/jira/browse/SOLR-16489) CaffeineCache puts thread 
-  into infinite loop
-* ✅ [SOLR-16515](https://issues.apache.org/jira/browse/SOLR-16515) Remove synchronized access to 
-  cachedOrdMaps in SlowCompositeReaderWrapper
+> ✅ checked issues have been successfully merged to upstream\
+> ⏳ waiting for approval\
+> ✨ new fix, needs to filed and pull requested
+
 * ⏳ [SOLR-10059](https://issues.apache.org/jira/browse/SOLR-10059) In SolrCloud, every 
   fq added via `<lst name="appends">` is computed twice. This breaks the collapse filter 
   if configured. Our fix turns this in a different direction, and 
-  [/otto-de/solr/tree/feature/SOLR-10059](sanitizes macros in appended fq parameters)
-* ✨ Add the ability to [/otto-de/solr/tree/feature/replica-custom-poll-interval](supply a custom poll interval)
+  [sanitizes macros in appended fq parameters](/otto-de/solr/tree/feature/SOLR-10059)
+* ✨ Add the ability to [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
   in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
   intervals.
 * ✨ Open up `ValueAugmenterFactory.ValueAugmenter` for extension
@@ -27,9 +25,14 @@ it to the upstream repository.
 
 * ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores
 
-> ✅ checked issues have been successfully merged to upstream\
-> ⏳ waiting for approval\
-> ✨ new fix, needs to filed and pull requested
+#### Merged fixes
+
+* ✅ [SOLR-15377](https://issues.apache.org/jira/browse/SOLR-15377) Do not swallow exceptions 
+  thrown in replication
+* ✅ [SOLR-16489](https://issues.apache.org/jira/browse/SOLR-16489) CaffeineCache puts thread 
+  into infinite loop
+* ✅ [SOLR-16515](https://issues.apache.org/jira/browse/SOLR-16515) Remove synchronized access to 
+  cachedOrdMaps in SlowCompositeReaderWrapper
 
 ## 👩‍💻 Using this fork repository
 
