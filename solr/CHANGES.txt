@@ -983,6 +983,8 @@ Improvements
 
 Optimizations
 ---------------------
+* SOLR-16497 Allow for finer grained locking of access to SolrCores to reduce lock contention
+  (Dennis Berger, Torsten Bøgh Köster, Marco Petris)
 
 * SOLR-16515: Remove synchronized access to cachedOrdMaps in SlowCompositeReaderWrapper (Dennis Berger, Torsten Bøgh Köster, Marco Petris)
 
