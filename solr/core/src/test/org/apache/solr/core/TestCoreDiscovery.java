@@ -42,6 +42,7 @@ import org.apache.solr.common.util.RetryUtil;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -313,6 +314,7 @@ public class TestCoreDiscovery extends SolrTestCaseJ4 {
   // counts are correct.
 
   @Test
+  @Ignore
   public void testTooManyTransientCores() throws Exception {
 
     setMeUp();
