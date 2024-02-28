@@ -425,6 +425,7 @@ public class SolrCores {
       return getCoreFromAnyList(name, false);
     } finally {
       READ_WRITE_LOCK.writeLock().unlock();
+    }
   }
 
   // We should always be removing the first thing in the list with our name! The idea here is to NOT
