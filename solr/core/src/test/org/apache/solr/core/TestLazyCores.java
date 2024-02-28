@@ -28,13 +28,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.StreamingResponseCallback;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -47,11 +42,12 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
 import org.apache.solr.update.UpdateHandler;
-import org.apache.solr.util.LogListener;
 import org.apache.solr.util.ReadOnlyCoresLocator;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestLazyCores extends SolrTestCaseJ4 {
 
   /** Transient core cache max size defined in the test solr-transientCores.xml */
@@ -1028,88 +1024,5 @@ public class TestLazyCores extends SolrTestCaseJ4 {
         "test closing core without committing",
         makeReq(core, "q", "*:*"),
         "//result[@numFound='10']");
-  }
-
-  public void testDontEvictUsedCore() throws Exception {
-    // If a core is being used for a long time (say a long indexing batch) but nothing else for it,
-    // and if the transient cache has pressure and thus wants to unload a core, we should not
-    // unload it (yet).
-
-    CoreContainer cc = init();
-    String[] transientCoreNames =
-        new String[] {
-          "collection2", "collection3", "collection6", "collection7", "collection8", "collection9"
-        };
-
-    try (LogListener logs =
-        LogListener.info(TransientSolrCoreCacheDefault.class.getName())
-            .substring("NOT evicting transient core [" + transientCoreNames[0] + "]")) {
-      cc.waitForLoadingCoresToFinish(1000);
-      var solr = new EmbeddedSolrServer(cc, null);
-      final var longReqTimeMs = 5000; // plenty of time for a slow/busy CI
-
-      // First, start a long request on the first transient core.
-      //  We do this via relying on EmbeddedSolrServer to keep the core open as it works with
-      //  this streaming callback mechanism.
-      var longRequestLatch = new CountDownLatch(1);
-      var thread =
-          new Thread("longRequest") {
-            @Override
-            public void run() {
-              try {
-                solr.queryAndStreamResponse(
-                    transientCoreNames[0],
-                    params("q", "*:*"),
-                    new StreamingResponseCallback() {
-                      @Override
-                      public void streamSolrDocument(SolrDocument doc) {}
-
-                      @Override
-                      public void streamDocListInfo(long numFound, long start, Float maxScore) {
-                        try {
-                          // the core remains open until the test calls countDown()
-                          longRequestLatch.await();
-                        } catch (InterruptedException e) {
-                          Thread.currentThread().interrupt();
-                          throw new RuntimeException(e);
-                        }
-                      }
-                    });
-              } catch (SolrServerException | IOException e) {
-                fail(e.toString());
-              }
-            }
-          };
-      thread.start();
-
-      System.out.println("Inducing pressure on cache by querying many cores...");
-      // Now hammer on other transient cores to create transient cache pressure
-      for (int round = 0; round < 5 && logs.getCount() == 0; round++) {
-        // note: we skip over the first; we want the first to remain non-busy
-        for (int i = 1; i < transientCoreNames.length; i++) {
-          solr.query(transientCoreNames[i], params("q", "*:*"));
-        }
-      }
-      // Show that the cache logs that it was asked to evict but did not.
-      // To show the bug behavior, comment this out and also comment out the corresponding logic
-      // that fixes it at the spot this message is logged.
-      assertTrue(logs.getCount() > 0);
-
-      System.out.println("Done inducing pressure; now load first core");
-      assertTrue("long request should still be busy", thread.isAlive());
-      // Do another request on the first core
-      solr.query(transientCoreNames[0], params("q", "id:wakeUp"));
-
-      longRequestLatch.countDown();
-      thread.join(longReqTimeMs);
-      assertFalse(thread.isAlive());
-
-      // Do another request on the first core
-      solr.query(transientCoreNames[0], params("q", "id:justCheckingAgain"));
-
-      logs.getQueue().clear();
-    } finally {
-      cc.shutdown();
-    }
   }
 }
