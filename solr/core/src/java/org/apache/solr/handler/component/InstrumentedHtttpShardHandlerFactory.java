@@ -48,8 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>This code uses reflection to break up closed internal APIs.
  */
-public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactory
-    implements SolrInfoBean {
+public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactory {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -100,7 +99,7 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
               () -> zombies.size(),
               true,
               "count",
-              Category.QUERY.name(),
+              SolrInfoBean.Category.QUERY.name(),
               "httpShardHandler",
               "zombieServers");
       getSolrMetricsContext()
@@ -108,7 +107,7 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
               () -> alives.size(),
               true,
               "count",
-              Category.QUERY.name(),
+              SolrInfoBean.Category.QUERY.name(),
               "httpShardHandler",
               "aliveServers");
 
@@ -182,7 +181,7 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
                   destinationGauge,
                   true,
                   "count",
-                  Category.QUERY.name(),
+                  SolrInfoBean.Category.QUERY.name(),
                   "httpShardHandler",
                   "shardRequestQueue",
                   destinationName);
@@ -229,22 +228,5 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
         return 0;
       }
     }
-  }
-
-  // SolrInfoMBean methods
-
-  @Override
-  public String getName() {
-    return InstrumentedHtttpShardHandlerFactory.class.getName();
-  }
-
-  @Override
-  public String getDescription() {
-    return "A shard handler factory that captures Jetty http client metrics";
-  }
-
-  @Override
-  public Category getCategory() {
-    return Category.QUERY;
   }
 }
