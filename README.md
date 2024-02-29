@@ -17,7 +17,7 @@ it to the upstream repository.
   if configured. Our fix turns this in a different direction, and 
   [sanitizes macros in appended fq parameters](/otto-de/solr/tree/feature/SOLR-10059)
 * ⏳ [SOLR-17187](https://issues.apache.org/jira/browse/SOLR-17187) Add the ability to 
-  [/otto-de/solr/tree/feature/replica-custom-poll-interval](supply a custom poll interval)
+  [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
   in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
   intervals.
 * ⏳ [SOLR-17185](https://issues.apache.org/jira/browse/SOLR-17185) Open up 
