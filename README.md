@@ -85,15 +85,42 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 1. Check all formalities via `./gradlew check`
 1. Push your new branch
 
-### 🚀 Releasing a bugfixed version
+### 🔁 Updating a existing release version
 
-1. Fork the Solr minor version release branch, e.g. `branch_9_5`
+If you want to release a new bugfix version of a already existing Solr release
+(say `9.5.0-otto-de.2` over `9.5.0-otto-de.1`), follow these steps.
+
+1. Locate the current release candidate branch. For Solr `9.5.x`
+   this would be `candidate/branch_9_5`
+1. Sync the Apache Solr release branch `branch_9_5` using the GitHub UI
+1. Rebase our release candidate branch onto the Apache Solr release
+   branch and replay all Cherry Pick Commits. Force push our 
+   release candidate branch to GitHub
+
+```bash
+git checkout candidate/branch_9_5
+git rebase branch_9_5 --reapply-cherry-picks
+git push origin candidate/branch_9_5 --force
+```
+
+4. Now cherry pick the new features/issues onto the candidate branch
+5. Run `./gradlew check`
+6. Push changes to candidate branch
+
+### 🚀 Releasing a new version
+
+If you want to release a new bugfix version of a new Solr release
+(say `9.6.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
+
+
+1. Fork the Solr minor version release branch, e.g. `branch_9_6`
    into our fork repository
-1. Create a bugfix branch `candiates/branch_9_5` branching off
+1. Create a bugfix branch `candiates/branch_9_6` branching off
    the Solr minor release branch
 1. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
    Github Action Workflow to your new branch
 1. Cherry pick all fixes from the `features/**` branches to our 
    candidate branch and make sure things integrate well (`./gradlew check`)
-1. Create and push your changes to the candidate branch. This will
-   trigger a last `./gradlew check`
+1. Push your changes to the candidate branch. This will
+   trigger a last `./gradlew check -x test` in GitHub actions
+1. Trigger the Release GitHub action to build and publis a new release
