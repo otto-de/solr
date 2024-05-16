@@ -85,6 +85,17 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 1. Check all formalities via `./gradlew check`
 1. Push your new branch
 
+## 🚀 Releasing a new version
+
+Clone the fork repository and prepare 
+the `upstream` source git repository.
+
+```bash
+git remote -v
+git remote add upstream https://github.com/apache/solr.git
+git fetch upstream
+```
+
 ### 🔁 Updating a existing release version
 
 If you want to release a new bugfix version of a already existing Solr release
@@ -107,20 +118,44 @@ git push origin candidate/branch_9_5 --force
 5. Run `./gradlew check`
 6. Push changes to candidate branch
 
-### 🚀 Releasing a new version
+### 🎯 Releasing a new version
 
 If you want to release a new bugfix version of a new Solr release
 (say `9.6.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
 
-
 1. Fork the Solr minor version release branch, e.g. `branch_9_6`
    into our fork repository
-1. Create a bugfix branch `candiates/branch_9_6` branching off
+
+```
+git checkout branch_9_6
+git push origin branch_9_6
+```
+
+2. Create a bugfix branch `candiates/branch_9_6` branching off
    the Solr minor release branch
-1. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
-   Github Action Workflow to your new branch
-1. Cherry pick all fixes from the `features/**` branches to our 
+
+```bash
+git checkout -b candidates/branch_9_6
+```
+
+3. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
+   Github Action Workflow to your new branch. Check whether this
+   baseline tests ok (via GitHub Actions)
+
+```bash
+curl -fsLo .github/workflows/branch-test.yaml \
+   https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/branch-test.yaml
+git add .github/workflows/branch-test.yaml
+git commit -m "Add branch test action"
+git push origin candidates/branch_9_6
+```
+
+4. Cherry pick all fixes from the `features/**` branches to our 
    candidate branch and make sure things integrate well (`./gradlew check`)
+
+```
+```
+
 1. Push your changes to the candidate branch. This will
    trigger a last `./gradlew check -x test` in GitHub actions
 1. Trigger the Release GitHub action to build and publis a new release
