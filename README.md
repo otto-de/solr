@@ -96,6 +96,10 @@ git remote add upstream https://github.com/apache/solr.git
 git fetch upstream
 ```
 
+```bash
+sdk use java 11.0.21-tem
+```
+
 ### 🔁 Updating a existing release version
 
 If you want to release a new bugfix version of a already existing Solr release
@@ -123,7 +127,7 @@ git push origin candidate/branch_9_5 --force
 If you want to release a new bugfix version of a new Solr release
 (say `9.6.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
 
-1. Fork the Solr minor version release branch, e.g. `branch_9_6`
+1. __Fork the Solr minor version release branch__, e.g. `branch_9_6`
    into our fork repository
 
 ```
@@ -131,29 +135,37 @@ git checkout branch_9_6
 git push origin branch_9_6
 ```
 
-2. Create a bugfix branch `candiates/branch_9_6` branching off
+2. __Create a bugfix branch__ `candiates/branch_9_6` branching off
    the Solr minor release branch
 
 ```bash
 git checkout -b candidates/branch_9_6
 ```
 
-3. Add the [branch-test.yaml](.github/workflows/branch-test.yaml) 
-   Github Action Workflow to your new branch. Check whether this
-   baseline tests ok (via GitHub Actions)
+3. __Add our test and relase Github Action Workflows__ to your 
+   new branch. Run the `branch-test.yaml` GitHub Action manually
+   after push to check the branches baseline.
 
 ```bash
 curl -fsLo .github/workflows/branch-test.yaml \
-   https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/branch-test.yaml
+   "https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/branch-test.yaml"
+curl -fsLo .github/workflows/release.yaml \
+   "https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/release.yaml"
 git add .github/workflows/branch-test.yaml
-git commit -m "Add branch test action"
+git add .github/workflows/release.yaml
+git commit -m "Add branch test and release action"
 git push origin candidates/branch_9_6
 ```
 
-4. Cherry pick all fixes from the `features/**` branches to our 
-   candidate branch and make sure things integrate well (`./gradlew check`)
+4. __Cherry pick all fixes from the `features/**` branches__ to our 
+   candidate branch.  For each fix, verify that they are still needed!
+   Some may have been merged in the meantime!
+   After each cherry-pick make sure things integrate 
+   well (via `./gradlew check`). 
 
 ```
+# [SOLR-10059]
+git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb
 ```
 
 1. Push your changes to the candidate branch. This will
