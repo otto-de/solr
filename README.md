@@ -20,15 +20,21 @@ it to the upstream repository.
   [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
   in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
   intervals.
-* ⏳ [SOLR-17185](https://issues.apache.org/jira/browse/SOLR-17185) Open up 
-  `ValueAugmenterFactory.ValueAugmenter` for extension
 
 #### Pending fixes
 
 * ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores
 
+#### New fixes
+
+* ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler) Add an
+instrumented `HttpShardHandlerFactory`
+
+
 #### Merged fixes
 
+* ✅ [SOLR-17185](https://issues.apache.org/jira/browse/SOLR-17185) Open up 
+  `ValueAugmenterFactory.ValueAugmenter` for extension
 * ✅ [SOLR-15377](https://issues.apache.org/jira/browse/SOLR-15377) Do not swallow exceptions 
   thrown in replication
 * ✅ [SOLR-16489](https://issues.apache.org/jira/browse/SOLR-16489) CaffeineCache puts thread 
@@ -122,7 +128,7 @@ git push origin candidate/branch_9_5 --force
 5. Run `./gradlew check`
 6. Push changes to candidate branch
 
-### 🎯 Releasing a new version
+### 🎯 Releasing a new minor version
 
 If you want to release a new bugfix version of a new Solr release
 (say `9.6.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
@@ -130,16 +136,16 @@ If you want to release a new bugfix version of a new Solr release
 1. __Fork the Solr minor version release branch__, e.g. `branch_9_6`
    into our fork repository
 
-```
-git checkout branch_9_6
-git push origin branch_9_6
+```bash
+$ git checkout branch_9_6
+$ git push origin branch_9_6
 ```
 
 2. __Create a bugfix branch__ `candiates/branch_9_6` branching off
    the Solr minor release branch
 
 ```bash
-git checkout -b candidates/branch_9_6
+$ git checkout -b candidates/branch_9_6
 ```
 
 3. __Add our test and relase Github Action Workflows__ to your 
@@ -147,14 +153,14 @@ git checkout -b candidates/branch_9_6
    after push to check the branches baseline.
 
 ```bash
-curl -fsLo .github/workflows/branch-test.yaml \
+$ curl -fsLo .github/workflows/branch-test.yaml \
    "https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/branch-test.yaml"
-curl -fsLo .github/workflows/release.yaml \
+$ curl -fsLo .github/workflows/release.yaml \
    "https://raw.githubusercontent.com/otto-de/solr/about-this-fork/.github/workflows/release.yaml"
-git add .github/workflows/branch-test.yaml
-git add .github/workflows/release.yaml
-git commit -m "Add branch test and release action"
-git push origin candidates/branch_9_6
+$ git add .github/workflows/branch-test.yaml
+$ git add .github/workflows/release.yaml
+$ git commit -m "Add branch test and release action"
+$ git push origin candidates/branch_9_6
 ```
 
 4. __Cherry pick all fixes from the `features/**` branches__ to our 
@@ -165,9 +171,19 @@ git push origin candidates/branch_9_6
 
 ```
 # [SOLR-10059]
-git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb
+$ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb
+
+# [SOLR-17187]
+$ git cherry-pick 533950b0f58c44e86a38980685e267643a4be1a9
+
+# instrumented shard handler
+$ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907
+
+# [SOLR-16497]
+$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898
 ```
 
-1. Push your changes to the candidate branch. This will
-   trigger a last `./gradlew check -x test` in GitHub actions
-1. Trigger the Release GitHub action to build and publis a new release
+5. __Push your changes to the candidate branch__ and
+   trigger the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml) for your new release candidate
+   branch.
+6. __Trigger the [Release GitHub Action](https://github.com/otto-de/solr/actions/workflows/release.yaml)__ to build and publish a new release
