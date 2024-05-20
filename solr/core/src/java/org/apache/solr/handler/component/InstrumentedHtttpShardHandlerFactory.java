@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -70,33 +71,38 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
     registerHttpDestinationGauges(defaultClient);
   }
 
+  @SuppressWarnings("unchecked")
   void registerDeadServerMetricGauges() {
     try {
       // break up loadbalancer in super class
       final Field loadbalancer = HttpShardHandlerFactory.class.getDeclaredField("loadbalancer");
+      Objects.requireNonNull(loadbalancer, "Could not access HttpShardHandlerFactory declared field 'loadbalancer'. This class might not be compatible with the Solr version used.");
       loadbalancer.setAccessible(true);
 
       // break up zombie servers in LBHttp2SolrClient
       final Field zombieServers = LBSolrClient.class.getDeclaredField("zombieServers");
+      Objects.requireNonNull(zombieServers, "Could not access LBSolrClient declared field 'zombieServers'. This class might not be compatible with the Solr version used.");
       zombieServers.setAccessible(true);
 
       // break up zombie servers in LBHttp2SolrClient
-      final Field aliveServers = LBSolrClient.class.getDeclaredField("aliveServers");
+      final Field aliveServers = LBSolrClient.class.getDeclaredField("aliveServerList");
+      Objects.requireNonNull(aliveServers, "Could not access LBSolrClient declared field 'aliveServerList'. This class might not be compatible with the Solr version used.");
       aliveServers.setAccessible(true);
 
       // get instance
       final LBHttp2SolrClient loadbalancerSolrClient = (LBHttp2SolrClient) loadbalancer.get(this);
-      @SuppressWarnings("unchecked")
-      final Map<String, Object> zombies =
-          (Map<String, Object>) zombieServers.get(loadbalancerSolrClient);
-      @SuppressWarnings("unchecked")
-      final Map<String, Object> alives =
-          (Map<String, Object>) aliveServers.get(loadbalancerSolrClient);
 
       // register the gauges
       getSolrMetricsContext()
           .gauge(
-              () -> zombies.size(),
+              () -> {
+                try {
+                    return ((Map<String, Object>) zombieServers.get(loadbalancerSolrClient)).size();
+                } catch (Exception e) {
+                    log.warn("Cannot extract zombieServers metric count", e);
+                    return 0;
+                }
+              },
               true,
               "count",
               SolrInfoBean.Category.QUERY.name(),
@@ -104,7 +110,14 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
               "zombieServers");
       getSolrMetricsContext()
           .gauge(
-              () -> alives.size(),
+              () -> {
+                try {
+                    return ((Object[]) aliveServers.get(loadbalancerSolrClient)).length;
+                } catch (Exception e) {
+                    log.warn("Cannot extract aliveServers metric count", e);
+                    return 0;
+                }
+              },
               true,
               "count",
               SolrInfoBean.Category.QUERY.name(),
