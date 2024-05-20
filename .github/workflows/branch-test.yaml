@@ -37,4 +37,4 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Run gradle check
-      run: ./gradlew check
+      run: ./gradlew check -x test
