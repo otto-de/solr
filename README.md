@@ -20,6 +20,9 @@ it to the upstream repository.
   [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
   in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
   intervals.
+* ✨ [SOLR-17334](https://issues.apache.org/jira/browse/SOLR-17334) Minor bugs in Solr 
+  dedicated coordinator mode. Fix access to the root resource and allow coordinator
+  requests outside of the `/select` handler
 
 #### Pending fixes
 
@@ -62,7 +65,7 @@ add the GitHub Maven Package Repository to your Maven or Gradle file.
 Docker images are published for both `arm64` and `amd64` architectures:
 
 ```bash
-docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.5.0
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.6.1
 ```
 
 > There is no `latest` tag available for the Docker images
@@ -106,7 +109,7 @@ git fetch upstream
 sdk use java 11.0.21-tem
 ```
 
-### 🔁 Updating a existing release version
+### 🔁 Releasing a new patch level version
 
 If you want to release a new bugfix version of a already existing Solr release
 (say `9.5.0-otto-de.2` over `9.5.0-otto-de.1`), follow these steps.
@@ -119,9 +122,9 @@ If you want to release a new bugfix version of a already existing Solr release
    release candidate branch to GitHub
 
 ```bash
-git checkout candidate/branch_9_5
+git checkout candidates/branch_9_5
 git rebase branch_9_5 --reapply-cherry-picks
-git push origin candidate/branch_9_5 --force
+git push origin candidates/branch_9_5 --force
 ```
 
 4. Now cherry pick the new features/issues onto the candidate branch
