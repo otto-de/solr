@@ -20,9 +20,11 @@ it to the upstream repository.
   [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
   in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
   intervals.
-* ✨ [SOLR-17334](https://issues.apache.org/jira/browse/SOLR-17334) Minor bugs in Solr 
+* ✨ [SOLR-17334](https://github.com/apache/solr/pull/2527) Minor bugs in Solr 
   dedicated coordinator mode. Fix access to the root resource and allow coordinator
   requests outside of the `/select` handler
+* ✨ [SOLR-17337](https://github.com/apache/solr/pull/2526) Show proper 
+  distributed stage id
 
 #### Pending fixes
 
@@ -112,19 +114,19 @@ sdk use java 11.0.21-tem
 ### 🔁 Releasing a new patch level version
 
 If you want to release a new bugfix version of a already existing Solr release
-(say `9.5.0-otto-de.2` over `9.5.0-otto-de.1`), follow these steps.
+(say `9.6.0-otto-de.2` over `9.6.0-otto-de.1`), follow these steps.
 
-1. Locate the current release candidate branch. For Solr `9.5.x`
-   this would be `candidate/branch_9_5`
-1. Sync the Apache Solr release branch `branch_9_5` using the GitHub UI
+1. Locate the current release candidate branch. For Solr `9.6.x`
+   this would be `candidates/branch_9_6`
+1. Sync the Apache Solr release branch `branch_9_6` using the GitHub UI
 1. Rebase our release candidate branch onto the Apache Solr release
    branch and replay all Cherry Pick Commits. Force push our 
    release candidate branch to GitHub
 
 ```bash
-git checkout candidates/branch_9_5
-git rebase branch_9_5 --reapply-cherry-picks
-git push origin candidates/branch_9_5 --force
+git checkout candidates/branch_9_6
+git rebase branch_9_6 --reapply-cherry-picks
+git push origin candidates/branch_9_6 --force
 ```
 
 4. Now cherry pick the new features/issues onto the candidate branch
@@ -184,6 +186,12 @@ $ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907
 
 # [SOLR-16497]
 $ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898
+
+# [SOLR-17334]
+$ git cherry-pick 57affd329770bdd7c2205e848ab23994750fe79d
+
+# [SOLR-17337]
+$ git cherry-pick 0a1bfd7cccd4640a1e1e6ca51982bf8042157cd8
 ```
 
 5. __Push your changes to the candidate branch__ and
