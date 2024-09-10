@@ -818,6 +818,7 @@ public class SolrConfig implements MapSerializable {
     public final boolean openSearcher; // is opening a new searcher part of hard autocommit?
     public final boolean commitWithinSoftCommit;
     public final boolean aggregateNodeLevelMetricsEnabled;
+    public final String commitPollInterval;
 
     /**
      * @param autoCommmitMaxDocs set -1 as default
@@ -832,7 +833,8 @@ public class SolrConfig implements MapSerializable {
         boolean openSearcher,
         int autoSoftCommmitMaxDocs,
         int autoSoftCommmitMaxTime,
-        boolean commitWithinSoftCommit) {
+        boolean commitWithinSoftCommit,
+        String commitPollInterval) {
       this.className = className;
       this.autoCommmitMaxDocs = autoCommmitMaxDocs;
       this.autoCommmitMaxTime = autoCommmitMaxTime;
@@ -844,6 +846,8 @@ public class SolrConfig implements MapSerializable {
 
       this.commitWithinSoftCommit = commitWithinSoftCommit;
       this.aggregateNodeLevelMetricsEnabled = false;
+
+      this.commitPollInterval = commitPollInterval;
     }
 
     public UpdateHandlerInfo(ConfigNode updateHandler) {
@@ -860,6 +864,7 @@ public class SolrConfig implements MapSerializable {
           updateHandler.get("commitWithin").get("softCommit").boolVal(true);
       this.aggregateNodeLevelMetricsEnabled =
           updateHandler.boolAttr("aggregateNodeLevelMetricsEnabled", false);
+      this.commitPollInterval = updateHandler.get("commitPollInterval").txt();
     }
 
     @Override
@@ -874,6 +879,7 @@ public class SolrConfig implements MapSerializable {
       map.put(
           "autoSoftCommit",
           Map.of("maxDocs", autoSoftCommmitMaxDocs, "maxTime", autoSoftCommmitMaxTime));
+      map.put("commitPollInterval", commitPollInterval);
       return map;
     }
   }
