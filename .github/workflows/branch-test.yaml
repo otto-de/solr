@@ -1,0 +1,40 @@
+name: Gradle Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feature/**'
+      - 'candidate/**'
+    paths-ignore:
+      - '*.md'
+      - '.github/**'
+
+jobs:
+  check:
+    name: check formalities and run tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 11
+        java-package: jdk
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-check-${{ hashFiles('versions.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-check-
+          ${{ runner.os }}-gradle-
+
+    - name: Run gradle check
+      run: ./gradlew check -x test
