@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - 'feature/**'
-      - 'candidate/**'
+      - 'candidates/**'
     paths-ignore:
       - '*.md'
       - '.github/**'
