@@ -23,14 +23,12 @@ it to the upstream repository.
 * ✨ [SOLR-17334](https://github.com/apache/solr/pull/2527) Minor bugs in Solr 
   dedicated coordinator mode. Fix access to the root resource and allow coordinator
   requests outside of the `/select` handler
-* ✨ [SOLR-17337](https://github.com/apache/solr/pull/2526) Show proper 
-  distributed stage id
 
 #### Pending fixes
 
 * ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores
 
-#### New fixes
+#### Upcoming fixes
 
 * ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler) Add an
 instrumented `HttpShardHandlerFactory`
@@ -38,6 +36,8 @@ instrumented `HttpShardHandlerFactory`
 
 #### Merged fixes
 
+* ✅ [SOLR-17337](https://github.com/apache/solr/pull/2526) Show proper 
+  distributed stage id
 * ✅ [SOLR-17185](https://issues.apache.org/jira/browse/SOLR-17185) Open up 
   `ValueAugmenterFactory.ValueAugmenter` for extension
 * ✅ [SOLR-15377](https://issues.apache.org/jira/browse/SOLR-15377) Do not swallow exceptions 
@@ -67,7 +67,7 @@ add the GitHub Maven Package Repository to your Maven or Gradle file.
 Docker images are published for both `arm64` and `amd64` architectures:
 
 ```bash
-docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.6.1
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.7.0
 ```
 
 > There is no `latest` tag available for the Docker images
@@ -136,21 +136,22 @@ git push origin candidates/branch_9_6 --force
 ### 🎯 Releasing a new minor version
 
 If you want to release a new bugfix version of a new Solr release
-(say `9.6.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
+(say `9.7.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
 
-1. __Fork the Solr minor version release branch__, e.g. `branch_9_6`
+1. __Fork the Solr minor version release branch__, e.g. `branch_9_7`
    into our fork repository
 
 ```bash
-$ git checkout branch_9_6
-$ git push origin branch_9_6
+$ git fetch upstream
+$ git checkout branch_9_7
+$ git push origin branch_9_7
 ```
 
-2. __Create a bugfix branch__ `candiates/branch_9_6` branching off
+2. __Create a bugfix branch__ `candiates/branch_9_7` branching off
    the Solr minor release branch
 
 ```bash
-$ git checkout -b candidates/branch_9_6
+$ git checkout -b candidates/branch_9_7
 ```
 
 3. __Add our test and relase Github Action Workflows__ to your 
@@ -165,7 +166,7 @@ $ curl -fsLo .github/workflows/release.yaml \
 $ git add .github/workflows/branch-test.yaml
 $ git add .github/workflows/release.yaml
 $ git commit -m "Add branch test and release action"
-$ git push origin candidates/branch_9_6
+$ git push origin candidates/branch_9_7
 ```
 
 4. __Cherry pick all fixes from the `features/**` branches__ to our 
@@ -174,27 +175,29 @@ $ git push origin candidates/branch_9_6
    After each cherry-pick make sure things integrate 
    well (via `./gradlew check`). 
 
-```
+```bash
 # [SOLR-10059]
-$ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb
+$ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-17187]
 $ git cherry-pick 533950b0f58c44e86a38980685e267643a4be1a9
+$ git cherry-pick fa9f4bca3f1e37260290f2ba89365d454c68e70e && ./gradlew clean compileJava compileTestJava
 
 # instrumented shard handler
-$ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907
+$ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907 && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-16497]
-$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898
+$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898 && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-17334]
-$ git cherry-pick 57affd329770bdd7c2205e848ab23994750fe79d
+$ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
 
-# [SOLR-17337]
-$ git cherry-pick 0a1bfd7cccd4640a1e1e6ca51982bf8042157cd8
+# done
+$ git push origin candidates/branch_9_7
 ```
 
-5. __Push your changes to the candidate branch__ and
-   trigger the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml) for your new release candidate
-   branch.
-6. __Trigger the [Release GitHub Action](https://github.com/otto-de/solr/actions/workflows/release.yaml)__ to build and publish a new release
+Every push triggers the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml)
+for your new release candidate branch. As soon as the action is green, ...
+
+5. __trigger the [Release GitHub Action](https://github.com/otto-de/solr/actions/workflows/release.yaml)__ 
+   to build and publish a new release

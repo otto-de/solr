@@ -6,7 +6,7 @@ on:
       solr_version:
         description: 'The upstream Solr release version'
         required: true
-        default: '9.5.0'
+        default: '9.7.0'
         type: string
       patch_version:
         description: 'The internal patch version suffix version'
