@@ -26,7 +26,7 @@ teardown() {
   save_home_on_failure
 
   run solr auth disable
-  solr stop -all >/dev/null 2>&1
+  solr stop --all >/dev/null 2>&1
 }
 
 
@@ -54,10 +54,10 @@ teardown() {
   solr start -c
   solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
 
-  run solr create -c test -s 2
+  run solr create -c test --shards 2
   assert_output --partial "Created collection 'test'"
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
   assert_output --partial '"numFound":0'
 
   run curl --cacert "$ssl_dir/solr-ssl.pem" "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
@@ -92,10 +92,10 @@ teardown() {
   solr start -c
   solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
 
-  run solr create -c test -s 2
+  run solr create -c test --shards 2
   assert_output --partial "Created collection 'test'"
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
   assert_output --partial '"numFound":0'
 
   # Just test that curl can connect via insecure or via a custom host header
@@ -113,7 +113,7 @@ teardown() {
   export SOLR_SSL_CHECK_PEER_NAME=true
 
   # This should fail the peername check
-  run ! solr api -verbose -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run ! solr api --verbose --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
   assert_output --regexp '(No subject alternative DNS name matching localhost found|Server refused connection)'
 
   # Restart the server enabling the SNI hostcheck
@@ -121,7 +121,7 @@ teardown() {
   export SOLR_OPTS="${SOLR_OPTS} -Dsolr.jetty.ssl.sniHostCheck=true"
   solr restart -c
   # This should fail the SNI Hostname check
-  run ! solr api -verbose -get "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
+  run ! solr api --verbose --solr-url "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
   assert_output --partial 'Invalid SNI'
 
   # Using the right hostname should not fail the SNI Hostname check
@@ -153,7 +153,7 @@ teardown() {
 
   solr start -c
   solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
-  solr auth enable -type basicAuth -credentials name:password
+  solr auth enable --type basicAuth --credentials name:password
 
   run curl -u name:password --basic --cacert "$ssl_dir/solr-ssl.pem" "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CREATE&collection.configName=_default&name=test&numShards=2&replicationFactor=1&router.name=compositeId&wt=json"
   assert_output --partial '"status":0'
@@ -217,10 +217,10 @@ teardown() {
   export SOLR_SSL_TRUST_STORE=
   export SOLR_SSL_TRUST_STORE_PASSWORD=
 
-  run solr create -c test -s 2
+  run solr create -c test --shards 2
   assert_output --partial "Created collection 'test'"
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
   assert_output --partial '"urlScheme":"https"'
 }
 
@@ -335,13 +335,13 @@ teardown() {
     solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
     solr assert --started https://localhost:${SOLR2_PORT} --timeout 5000
 
-    run solr create -c test -s 2
+    run solr create -c test --shards 2
     assert_output --partial "Created collection 'test'"
 
-    run solr api -get "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
+    run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
     assert_output --partial '"urlScheme":"https"'
 
-    run solr api -get "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*&rows=0"
+    run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*&rows=0"
     assert_output --partial '"numFound":0'
 
     (
@@ -349,7 +349,7 @@ teardown() {
       export SOLR_SSL_CLIENT_KEY_STORE=
       export SOLR_SSL_CLIENT_KEY_STORE_PASSWORD=
 
-      run ! solr api -verbose -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
+      run ! solr api --verbose --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
       assert_output --regexp '(bad_certificate|java.nio.channels.ClosedChannelException|Server refused connection)'
     )
   )
@@ -362,7 +362,7 @@ teardown() {
   # We can't check if the server has come up, because we can't connect to it, so just wait
   sleep 5
 
-  run ! solr api -verbose -get "https://localhost:${SOLR3_PORT}/solr/test/select?q=*:*&rows=0"
+  run ! solr api --verbose --solr-url "https://localhost:${SOLR3_PORT}/solr/test/select?q=*:*&rows=0"
   assert_output --regexp '(certificate_unknown|java.nio.channels.ClosedChannelException|Server refused connection)'
 }
 
@@ -472,27 +472,27 @@ teardown() {
   solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
   solr assert --started https://localhost:${SOLR2_PORT} --timeout 5000
 
-  run solr create -c test -s 2
+  run solr create -c test --shards 2
   assert_output --partial "Created collection 'test'"
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/admin/collections?action=CLUSTERSTATUS"
   assert_output --partial '"urlScheme":"https"'
 
-  run solr api -get "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*&rows=0"
+  run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*&rows=0"
   assert_output --partial '"numFound":0'
 
   export SOLR_SSL_CLIENT_KEY_STORE=
   export SOLR_SSL_CLIENT_KEY_STORE_PASSWORD=
 
   # mTLS requires a keyStore, so just using the truststore would fail if mTLS was "NEED"ed, however it is only "WANT"ed, so its ok
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
   assert_output --partial '"numFound":0'
 
   export SOLR_SSL_CLIENT_TRUST_STORE=
   export SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD=
 
   # TLS cannot work if a truststore and keystore are not provided (either Server or Client)
-  run solr api -verbose -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
+  run solr api --verbose --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*&rows=0"
   assert_output --regexp '(unable to find valid certification path to requested target|Server refused connection)'
 }
 
@@ -526,31 +526,33 @@ teardown() {
   # server1 will run on $SOLR_PORT and will use server1.keystore
   export SOLR_SSL_KEY_STORE=$ssl_dir/server1.keystore.p12
   export SOLR_SSL_TRUST_STORE=$ssl_dir/server1.keystore.p12
-  solr start -c -a "-Dsolr.jetty.sslContext.reload.scanInterval=1 -DsocketTimeout=5000"
+  solr start -c --jvm-opts "-Dsolr.jetty.sslContext.reload.scanInterval=1 -DsocketTimeout=5000"
   solr assert --started https://localhost:${SOLR_PORT} --timeout 5000
 
   # server2 will run on $SOLR2_PORT and will use server2.keystore. Initially, this is the same as server1.keystore
   export SOLR_SSL_KEY_STORE=$ssl_dir/server2.keystore.p12
   export SOLR_SSL_TRUST_STORE=$ssl_dir/server2.keystore.p12
+  
+  # leaving -a instead of --jvm-opts for back compat testing.
   solr start -c -z localhost:${ZK_PORT} -p ${SOLR2_PORT} -a "-Dsolr.jetty.sslContext.reload.scanInterval=1 -DsocketTimeout=5000"
   solr assert --started https://localhost:${SOLR2_PORT} --timeout 5000
 
   # "test" collection is two shards, meaning there must be communication between shards for queries (handled by http shard handler factory)
-  run solr create -c test -s 2
+  run solr create -c test --shards 2
   assert_output --partial "Created collection 'test'"
 
   # "test-single-shard" is one shard and one replica, this means that one of the nodes will have to forward requests to the other
-  run solr create -c test-single-shard -s 1
+  run solr create -c test-single-shard --shards 1
   assert_output --partial "Created collection 'test-single-shard'"
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
   assert_output --partial '"numFound":0'
-  run solr api -get "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test/select?q=*:*"
   assert_output --partial '"numFound":0'
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test-single-shard/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test-single-shard/select?q=*:*"
   assert_output --partial '"numFound":0'
-  run solr api -get "https://localhost:${SOLR2_PORT}/solr/test-single-shard/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test-single-shard/select?q=*:*"
   assert_output --partial '"numFound":0'
 
   run ! curl "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
@@ -564,7 +566,7 @@ teardown() {
   export SOLR_SSL_TRUST_STORE=$ssl_dir/cert2.keystore.p12
   export SOLR_SSL_TRUST_STORE_PASSWORD=secret
 
-  run ! solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run ! solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
 
   (
     cd "$ssl_dir"
@@ -574,12 +576,12 @@ teardown() {
   # Give some time for the server reload
   sleep 6
 
-  run solr healthcheck -solrUrl https://localhost:${SOLR_PORT}
+  run solr healthcheck --solr-url https://localhost:${SOLR_PORT}
 
   # Server 2 still uses the cert1, so this request should fail
-  run ! solr api -get "https://localhost:${SOLR2_PORT}/solr/test/select?q=query2"
+  run ! solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test/select?q=query2"
 
-  run ! solr healthcheck -solrUrl https://localhost:${SOLR2_PORT}
+  run ! solr healthcheck --solr-url https://localhost:${SOLR2_PORT}
 
   (
     cd "$ssl_dir"
@@ -589,23 +591,23 @@ teardown() {
   # Give some time for the server reload
   sleep 6
 
-  run solr healthcheck -solrUrl https://localhost:${SOLR_PORT}
-  run solr healthcheck -solrUrl https://localhost:${SOLR2_PORT}
+  run solr healthcheck --solr-url https://localhost:${SOLR_PORT}
+  run solr healthcheck --solr-url https://localhost:${SOLR2_PORT}
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=query3"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=query3"
   assert_output --partial '"numFound":0'
 
-  run solr api -get "https://localhost:${SOLR2_PORT}/solr/test/select?q=query3"
+  run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test/select?q=query3"
   assert_output --partial '"numFound":0'
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test-single-shard/select?q=query4"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test-single-shard/select?q=query4"
   assert_output --partial '"numFound":0'
 
-  run solr api -get "https://localhost:${SOLR2_PORT}/solr/test-single-shard/select?q=query4"
+  run solr api --solr-url "https://localhost:${SOLR2_PORT}/solr/test-single-shard/select?q=query4"
   assert_output --partial '"numFound":0'
 
-  run solr post -url https://localhost:${SOLR_PORT}/solr/test/update ${SOLR_TIP}/example/exampledocs/books.csv
+  run solr post --solr-update-url https://localhost:${SOLR_PORT}/solr/test/update ${SOLR_TIP}/example/exampledocs/books.csv
 
-  run solr api -get "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
+  run solr api --solr-url "https://localhost:${SOLR_PORT}/solr/test/select?q=*:*"
   assert_output --partial '"numFound":10'
 }
