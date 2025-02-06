@@ -33,6 +33,7 @@ it to the upstream repository.
 
 * ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler) Add an
 instrumented `HttpShardHandlerFactory`
+* ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/features/custom-stages) Re-enable custom stages
 
 
 #### Merged fixes
@@ -68,7 +69,7 @@ add the GitHub Maven Package Repository to your Maven or Gradle file.
 Docker images are published for both `arm64` and `amd64` architectures:
 
 ```bash
-docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.7.0
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.8.0
 ```
 
 > There is no `latest` tag available for the Docker images
@@ -137,22 +138,22 @@ git push origin candidates/branch_9_6 --force
 ### 🎯 Releasing a new minor version
 
 If you want to release a new bugfix version of a new Solr release
-(say `9.7.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
+(say `9.8.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
 
-1. __Fork the Solr minor version release branch__, e.g. `branch_9_7`
+1. __Fork the Solr minor version release branch__, e.g. `branch_9_8`
    into our fork repository
 
 ```bash
 $ git fetch upstream
-$ git checkout branch_9_7
-$ git push origin branch_9_7
+$ git checkout branch_9_8
+$ git push origin branch_9_8
 ```
 
-2. __Create a bugfix branch__ `candiates/branch_9_7` branching off
+2. __Create a bugfix branch__ `candiates/branch_9_8` branching off
    the Solr minor release branch
 
 ```bash
-$ git checkout -b candidates/branch_9_7
+$ git checkout -b candidates/branch_9_8
 ```
 
 3. __Add our test and relase Github Action Workflows__ to your 
@@ -167,7 +168,7 @@ $ curl -fsLo .github/workflows/release.yaml \
 $ git add .github/workflows/branch-test.yaml
 $ git add .github/workflows/release.yaml
 $ git commit -m "Add branch test and release action"
-$ git push origin candidates/branch_9_7
+$ git push origin candidates/branch_9_8
 ```
 
 4. __Cherry pick all fixes from the `features/**` branches__ to our 
@@ -193,8 +194,11 @@ $ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898 && ./gradlew clean co
 # [SOLR-17334]
 $ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
 
+# re-enable custom stages
+$ git cherry-pick 7381285cca74d7019db4d70b49563208b971dda2 && ./gradlew clean compileJava compileTestJava
+
 # done
-$ git push origin candidates/branch_9_7
+$ git push origin candidates/branch_9_8
 ```
 
 Every push triggers the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml)
