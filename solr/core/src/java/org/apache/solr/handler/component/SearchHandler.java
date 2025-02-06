@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -743,8 +744,7 @@ public class SearchHandler extends RequestHandlerBase
       case STAGE_DONE:
         return "FINISHING";
       default:
-        throw new SolrException(
-            SolrException.ErrorCode.SERVER_ERROR, "Unrecognized stage:" + nextStage);
+        return String.format(Locale.ROOT, "CUSTOM (%s)", nextStage);
     }
   }
 
