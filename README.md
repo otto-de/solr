@@ -1,4 +1,5 @@
 # 🚀 Otto.de high performance Solr
+![OSS Lifecycle](https://img.shields.io/osslifecycle?file_url=https%3A%2F%2Fraw.githubusercontent.com%2Fotto-de%2Fsolr%2Fabout-this-fork%2FOSSMETADATA)
 
 This [Solr](/apache/solr) fork repository contains bugfixes
 and optimizations targeted for upstream Solr. It is our working 
