@@ -156,7 +156,7 @@ $ git push origin branch_9_8
 $ git checkout -b candidates/branch_9_8
 ```
 
-3. __Add our test and relase Github Action Workflows__ to your 
+3. __Add our test and release Github Action Workflows__ to your 
    new branch. Run the `branch-test.yaml` GitHub Action manually
    after push to check the branches baseline.
 
