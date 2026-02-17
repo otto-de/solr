@@ -74,7 +74,7 @@ add the GitHub Maven Package Repository to your Maven or Gradle file.
 Docker images are published for both `arm64` and `amd64` architectures:
 
 ```bash
-docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.8.0
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.10.1
 ```
 
 > [!NOTE]
@@ -194,11 +194,11 @@ $ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb && ./gradlew clean co
 # instrumented shard handler
 $ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907 && ./gradlew clean compileJava compileTestJava
 
-# [SOLR-17334]
+# [SOLR-17334] Allow coordinator requests outside of /select
 $ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
 
-# [SOLR-16497]
-$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898 && ./gradlew clean compileJava compileTestJava
+# [SOLR-16497] Finer grained locking
+$ git cherry-pick 9a514ee7fea55c769d410a9aa5424d9745cea580 && ./gradlew clean compileJava compileTestJava
 
 # done
 $ git push origin candidates/branch_9_10
