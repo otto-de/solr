@@ -101,7 +101,7 @@ jobs:
         env:
           SOLR_DOCKER_IMAGE_REPO: ${{ github.repository }}
           SOLR_DOCKER_IMAGE_TAG: ${{ env.VERSION }}
-          SOLR_DOCKER_BASE_IMAGE: eclipse-temurin:25-jre-noble
+          SOLR_DOCKER_BASE_IMAGE: eclipse-temurin:25-jre-jammy
           SOLR_DOCKER_DIST: full
       
       - name: Prepare multi-arch Docker build
