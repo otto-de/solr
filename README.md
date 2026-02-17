@@ -9,6 +9,11 @@ it to the upstream repository.
 
 ## 📦 Improvements and bugfixes
 
+These are the improvements and bugfixes in this release. Some are already
+filed as Solr issues, some are pending issues and others have not yet
+been submitted.
+
+> [!NOTE]
 > ✅ checked issues have been successfully merged to upstream\
 > ⏳ waiting for approval\
 > ✨ new fix, needs to filed and pull requested
@@ -17,10 +22,6 @@ it to the upstream repository.
   fq added via `<lst name="appends">` is computed twice. This breaks the collapse filter 
   if configured. Our fix turns this in a different direction, and 
   [sanitizes macros in appended fq parameters](/otto-de/solr/tree/feature/SOLR-10059)
-* ⏳ [SOLR-17187](https://issues.apache.org/jira/browse/SOLR-17187) Add the ability to 
-  [supply a custom poll interval](/otto-de/solr/tree/feature/replica-custom-poll-interval)
-  in the `updateHandler`. This is of interest for TLOG/PULL replica setups with longer commit
-  intervals.
 * ✨ [SOLR-17334](https://github.com/apache/solr/pull/2527) Minor bugs in Solr 
   dedicated coordinator mode. Fix access to the root resource and allow coordinator
   requests outside of the `/select` handler
@@ -33,11 +34,15 @@ it to the upstream repository.
 
 * ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler) Add an
 instrumented `HttpShardHandlerFactory`
-* ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/features/custom-stages) Re-enable custom stages
 
 
 #### Merged fixes
 
+* ✅ [SOLR-17686](https://issues.apache.org/jira/browse/SOLR-17686) Our approach to 
+  [Re-enable custom stages](https://github.com/otto-de/solr/commits/features/custom-stages)
+* ✅ [SOLR-17187](https://issues.apache.org/jira/browse/SOLR-17187) Add the ability to 
+  supply a custom poll interval in the `updateHandler`. This is of interest for TLOG/PULL 
+  replica setups with longer commit intervals.
 * ✅ [SOLR-17337](https://github.com/apache/solr/pull/2526) Show proper 
   distributed stage id
 * ✅ [SOLR-17185](https://issues.apache.org/jira/browse/SOLR-17185) Open up 
@@ -72,6 +77,7 @@ Docker images are published for both `arm64` and `amd64` architectures:
 docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.8.0
 ```
 
+> [!NOTE]
 > There is no `latest` tag available for the Docker images
 
 
@@ -84,6 +90,7 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 
 ### ✨ Adding / working on a new improvement or fix
 
+> [!NOTE]
 > Do not pollute `.gitignore` settings with your local specialities. 
 > Use `.git/info/exclude` for local git ignores
 
@@ -101,7 +108,7 @@ familiarize yourself with the [Solr CONTRIBUTING](https://github.com/apache/solr
 ## 🚀 Releasing a new version
 
 Clone the fork repository and prepare 
-the `upstream` source git repository.
+the `upstream` source git repository:
 
 ```bash
 git remote -v
@@ -109,8 +116,11 @@ git remote add upstream https://github.com/apache/solr.git
 git fetch upstream
 ```
 
+Solr 9 is a JDK11 project. Please make your adjustment using a
+recent JDK11:
+
 ```bash
-sdk use java 11.0.21-tem
+sdk use java 11.0.30-tem
 ```
 
 ### 🔁 Releasing a new patch level version
@@ -140,20 +150,20 @@ git push origin candidates/branch_9_6 --force
 If you want to release a new bugfix version of a new Solr release
 (say `9.8.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
 
-1. __Fork the Solr minor version release branch__, e.g. `branch_9_8`
+1. __Fork the Solr minor version release branch__, e.g. `branch_9_10`
    into our fork repository
 
 ```bash
 $ git fetch upstream
-$ git checkout branch_9_8
-$ git push origin branch_9_8
+$ git checkout branch_9_10
+$ git push origin branch_9_10
 ```
 
-2. __Create a bugfix branch__ `candiates/branch_9_8` branching off
+2. __Create a bugfix branch__ `candiates/branch_9_10` branching off
    the Solr minor release branch
 
 ```bash
-$ git checkout -b candidates/branch_9_8
+$ git checkout -b candidates/branch_9_10
 ```
 
 3. __Add our test and release Github Action Workflows__ to your 
@@ -168,7 +178,7 @@ $ curl -fsLo .github/workflows/release.yaml \
 $ git add .github/workflows/branch-test.yaml
 $ git add .github/workflows/release.yaml
 $ git commit -m "Add branch test and release action"
-$ git push origin candidates/branch_9_8
+$ git push origin candidates/branch_9_10
 ```
 
 4. __Cherry pick all fixes from the `features/**` branches__ to our 
@@ -181,24 +191,17 @@ $ git push origin candidates/branch_9_8
 # [SOLR-10059]
 $ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb && ./gradlew clean compileJava compileTestJava
 
-# [SOLR-17187]
-$ git cherry-pick 533950b0f58c44e86a38980685e267643a4be1a9
-$ git cherry-pick fa9f4bca3f1e37260290f2ba89365d454c68e70e && ./gradlew clean compileJava compileTestJava
-
 # instrumented shard handler
 $ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907 && ./gradlew clean compileJava compileTestJava
-
-# [SOLR-16497]
-$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898 && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-17334]
 $ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
 
-# re-enable custom stages
-$ git cherry-pick 7381285cca74d7019db4d70b49563208b971dda2 && ./gradlew clean compileJava compileTestJava
+# [SOLR-16497]
+$ git cherry-pick 444e8eec26e45e7f5a128d97282cf4ffc47e8898 && ./gradlew clean compileJava compileTestJava
 
 # done
-$ git push origin candidates/branch_9_8
+$ git push origin candidates/branch_9_10
 ```
 
 Every push triggers the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml)
