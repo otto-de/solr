@@ -192,7 +192,7 @@ $ git push origin candidates/branch_9_10
 $ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb && ./gradlew clean compileJava compileTestJava
 
 # instrumented shard handler
-$ git cherry-pick 394fab8611d25f2568a86a11d584ee77af656907 && ./gradlew clean compileJava compileTestJava
+$ git cherry-pick 5091131251e8995c16606d2a6555290fc3b2735c && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-17334] Allow coordinator requests outside of /select
 $ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
