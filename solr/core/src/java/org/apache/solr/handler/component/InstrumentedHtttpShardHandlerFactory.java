@@ -76,17 +76,23 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
     try {
       // break up loadbalancer in super class
       final Field loadbalancer = HttpShardHandlerFactory.class.getDeclaredField("loadbalancer");
-      Objects.requireNonNull(loadbalancer, "Could not access HttpShardHandlerFactory declared field 'loadbalancer'. This class might not be compatible with the Solr version used.");
+      Objects.requireNonNull(
+          loadbalancer,
+          "Could not access HttpShardHandlerFactory declared field 'loadbalancer'. This class might not be compatible with the Solr version used.");
       loadbalancer.setAccessible(true);
 
       // break up zombie servers in LBHttp2SolrClient
       final Field zombieServers = LBSolrClient.class.getDeclaredField("zombieServers");
-      Objects.requireNonNull(zombieServers, "Could not access LBSolrClient declared field 'zombieServers'. This class might not be compatible with the Solr version used.");
+      Objects.requireNonNull(
+          zombieServers,
+          "Could not access LBSolrClient declared field 'zombieServers'. This class might not be compatible with the Solr version used.");
       zombieServers.setAccessible(true);
 
       // break up zombie servers in LBHttp2SolrClient
       final Field aliveServers = LBSolrClient.class.getDeclaredField("aliveServerList");
-      Objects.requireNonNull(aliveServers, "Could not access LBSolrClient declared field 'aliveServerList'. This class might not be compatible with the Solr version used.");
+      Objects.requireNonNull(
+          aliveServers,
+          "Could not access LBSolrClient declared field 'aliveServerList'. This class might not be compatible with the Solr version used.");
       aliveServers.setAccessible(true);
 
       // get instance
@@ -97,10 +103,10 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
           .gauge(
               () -> {
                 try {
-                    return ((Map<String, Object>) zombieServers.get(loadbalancerSolrClient)).size();
+                  return ((Map<String, Object>) zombieServers.get(loadbalancerSolrClient)).size();
                 } catch (Exception e) {
-                    log.warn("Cannot extract zombieServers metric count", e);
-                    return 0;
+                  log.warn("Cannot extract zombieServers metric count", e);
+                  return 0;
                 }
               },
               true,
@@ -112,10 +118,10 @@ public class InstrumentedHtttpShardHandlerFactory extends HttpShardHandlerFactor
           .gauge(
               () -> {
                 try {
-                    return ((Object[]) aliveServers.get(loadbalancerSolrClient)).length;
+                  return ((Object[]) aliveServers.get(loadbalancerSolrClient)).length;
                 } catch (Exception e) {
-                    log.warn("Cannot extract aliveServers metric count", e);
-                    return 0;
+                  log.warn("Cannot extract aliveServers metric count", e);
+                  return 0;
                 }
               },
               true,
