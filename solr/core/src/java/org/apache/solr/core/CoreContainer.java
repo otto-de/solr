@@ -1271,8 +1271,11 @@ public class CoreContainer {
       // It's still possible that one of the pending dynamic load operation is waiting, so wake it
       // up if so. Since all the pending operations queues have been drained, there should be
       // nothing to do.
-      synchronized (solrCores.getModifyLock()) {
-        solrCores.getModifyLock().notifyAll(); // wake up the thread
+      solrCores.getWriteLock().lock();
+      try {
+        solrCores.getWriteLockCondition().signalAll(); // wake up the thread
+      } finally {
+        solrCores.getWriteLock().unlock();
       }
 
       customThreadPool.execute(replayUpdatesExecutor::shutdownAndAwaitTermination);
