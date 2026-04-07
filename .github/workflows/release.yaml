@@ -6,7 +6,7 @@ on:
       solr_version:
         description: 'The upstream Solr release version'
         required: true
-        default: '9.7.0'
+        default: '10.0.0'
         type: string
       patch_version:
         description: 'The internal patch version suffix version'
@@ -24,16 +24,16 @@ jobs:
     name: Build and release Maven artifacts
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v4
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
-        java-version: 11
+        java-version: 21
         java-package: jdk
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: |
           ~/.gradle/caches
@@ -72,21 +72,21 @@ jobs:
     steps:
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Docker Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
@@ -111,7 +111,7 @@ jobs:
               -C solr/packaging/build/distributions/context
 
       - name: Build and push to DockerHub registry
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           push: true
@@ -126,9 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.gradle/caches
