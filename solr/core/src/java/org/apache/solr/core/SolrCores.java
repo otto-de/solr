@@ -30,6 +30,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.util.ExecutorUtil;
 import org.apache.solr.common.util.SolrNamedThreadFactory;
@@ -44,7 +46,8 @@ class SolrCores implements SolrInfoBean {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   // for locking around manipulating any of the core maps.
-  protected final Object modifyLock = new Object();
+  private static final ReentrantReadWriteLock READ_WRITE_LOCK = new ReentrantReadWriteLock();
+  private static final Condition WRITE_LOCK_CONDITION = READ_WRITE_LOCK.writeLock().newCondition();
 
   private final Map<String, SolrCore> cores = new LinkedHashMap<>(); // For "permanent" cores
 
@@ -69,15 +72,21 @@ class SolrCores implements SolrInfoBean {
     this.container = container;
   }
 
-  public void addCoreDescriptor(CoreDescriptor p) {
-    synchronized (modifyLock) {
+  protected void addCoreDescriptor(CoreDescriptor p) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       residentDescriptors.put(p.getName(), p);
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
-  public void removeCoreDescriptor(CoreDescriptor p) {
-    synchronized (modifyLock) {
+  protected void removeCoreDescriptor(CoreDescriptor p) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       residentDescriptors.remove(p.getName());
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
@@ -93,7 +102,8 @@ class SolrCores implements SolrInfoBean {
     while (true) {
       Collection<SolrCore> coreList = new ArrayList<>();
 
-      synchronized (modifyLock) {
+      READ_WRITE_LOCK.writeLock().lock();
+      try {
         // remove all loaded cores; add to our working list.
         for (String name : getLoadedCoreNames()) {
           final var core = remove(name);
@@ -101,6 +111,8 @@ class SolrCores implements SolrInfoBean {
             coreList.add(core);
           }
         }
+      } finally {
+        READ_WRITE_LOCK.writeLock().unlock();
       }
 
       if (coreList.isEmpty()) {
@@ -135,10 +147,13 @@ class SolrCores implements SolrInfoBean {
 
   // Returns the old core if there was a core of the same name.
   // WARNING! This should be the _only_ place you put anything into the list of transient cores!
-  public SolrCore putCore(CoreDescriptor cd, SolrCore core) {
-    synchronized (modifyLock) {
+  protected SolrCore putCore(CoreDescriptor cd, SolrCore core) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       addCoreDescriptor(cd); // cd must always be registered if we register a core
       return cores.put(cd.getName(), core);
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
@@ -151,8 +166,11 @@ class SolrCores implements SolrInfoBean {
    */
   @Deprecated
   public List<SolrCore> getCores() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return new ArrayList<>(cores.values());
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -168,8 +186,11 @@ class SolrCores implements SolrInfoBean {
    *     can be sorted).
    */
   public List<String> getLoadedCoreNames() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return new ArrayList<>(cores.keySet());
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -182,8 +203,11 @@ class SolrCores implements SolrInfoBean {
    *     can be sorted).
    */
   public List<String> getAllCoreNames() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return new ArrayList<>(residentDescriptors.keySet());
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -192,15 +216,21 @@ class SolrCores implements SolrInfoBean {
    * {@link #getCores()}.size().
    */
   public int getNumLoadedPermanentCores() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return cores.size();
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
   /** Gets the number of unloaded cores, including permanent and transient cores. */
   public int getNumUnloadedCores() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return residentDescriptors.size() - cores.size();
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -209,13 +239,19 @@ class SolrCores implements SolrInfoBean {
    * cores. Faster equivalent for {@link #getAllCoreNames()}.size().
    */
   public int getNumAllCores() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return residentDescriptors.size();
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
   public void swap(String n0, String n1) {
-    synchronized (modifyLock) {
+
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
+
       SolrCore c0 = cores.get(n0);
       SolrCore c1 = cores.get(n1);
       // TODO DWS: honestly this doesn't appear to work properly unless the core is loaded
@@ -242,12 +278,17 @@ class SolrCores implements SolrInfoBean {
       c1.setName(n0);
       c0.getCoreMetricManager().reregisterCoreMetrics();
       c1.getCoreMetricManager().reregisterCoreMetrics();
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
   public SolrCore remove(String name) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       return cores.remove(name);
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
@@ -257,7 +298,8 @@ class SolrCores implements SolrInfoBean {
 
   /* If you don't increment the reference count, someone could close the core before you use it. */
   public SolrCore getCoreFromAnyList(String name, boolean incRefCount, UUID coreId) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       SolrCore core = getLoadedCoreWithoutIncrement(name);
 
       if (core != null && coreId != null && !coreId.equals(core.uniqueId)) return null;
@@ -267,19 +309,37 @@ class SolrCores implements SolrInfoBean {
       }
 
       return core;
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
   /** (internal) Return a core that is already loaded, if it is. NOT incremented! */
   protected SolrCore getLoadedCoreWithoutIncrement(String name) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return cores.get(name);
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
   public boolean isLoaded(String name) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return cores.containsKey(name);
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
+    }
+  }
+
+  /** The core is currently loading, unloading, or reloading. */
+  protected boolean hasPendingCoreOps(String name) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
+      return pendingCoreOps.contains(name);
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -287,8 +347,17 @@ class SolrCores implements SolrInfoBean {
   public SolrCore waitAddPendingCoreOps(String name) {
 
     // Keep multiple threads from operating on a core at one time.
-    synchronized (modifyLock) {
-      while (true) { // Are we currently doing anything to this core? Loading, unloading, reloading?
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
+
+      boolean pending;
+      do { // Are we currently doing anything to this core? Loading, unloading, reloading?
+        pending = pendingCoreOps.contains(name); // wait for the core to be done being operated upon
+
+        if (!pending) {
+          break;
+        }
+
         if (container.isShutDown()) {
           // Just stop already.
           // Seems best to throw a SolrException if shutting down, because returning any value,
@@ -296,43 +365,46 @@ class SolrCores implements SolrInfoBean {
           throw new SolrException(SolrException.ErrorCode.SERVER_ERROR, "Server is shutting down");
         }
 
-        if (!pendingCoreOps.contains(name)) {
-          break;
-        }
-
-        // wait for the core to be done being operated upon
         try {
-          modifyLock.wait();
+          WRITE_LOCK_CONDITION.await();
         } catch (InterruptedException e) {
           // Seems best to throw a SolrException if interrupted, because returning any value,
           // including null, would mean the waiting is complete.
           Thread.currentThread().interrupt();
           throw new SolrException(SolrException.ErrorCode.SERVER_ERROR, e);
         }
-      }
-
+      } while (pending);
       // We _really_ need to do this within the synchronized block!
       if (!pendingCoreOps.add(name)) {
         log.warn("Replaced an entry in pendingCoreOps {}, we should not be doing this", name);
       }
       // we might have been _unloading_ the core, so return the core if it was loaded.
       return getCoreFromAnyList(name, false);
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
   // We should always be removing the first thing in the list with our name! The idea here is to NOT
   // do anything on any core while some other operation is working on that core.
   public void removeFromPendingOps(String name) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       if (!pendingCoreOps.remove(name)) {
         log.warn("Tried to remove core {} from pendingCoreOps and it wasn't there. ", name);
       }
-      modifyLock.notifyAll();
+      WRITE_LOCK_CONDITION.signalAll();
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
-  public Object getModifyLock() {
-    return modifyLock;
+  ReentrantReadWriteLock.WriteLock getWriteLock() {
+    return READ_WRITE_LOCK.writeLock();
+  }
+
+  Condition getWriteLockCondition() {
+    return WRITE_LOCK_CONDITION;
   }
 
   /**
@@ -343,8 +415,11 @@ class SolrCores implements SolrInfoBean {
    * @return the CoreDescriptor
    */
   public CoreDescriptor getCoreDescriptor(String coreName) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return residentDescriptors.get(coreName);
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
@@ -355,22 +430,32 @@ class SolrCores implements SolrInfoBean {
    * @return An unordered list copy. This list can be modified by the caller (e.g. sorted).
    */
   public List<CoreDescriptor> getCoreDescriptors() {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.readLock().lock();
+    try {
       return new ArrayList<>(residentDescriptors.values());
+    } finally {
+      READ_WRITE_LOCK.readLock().unlock();
     }
   }
 
   // cores marked as loading will block on getCore
   public void markCoreAsLoading(CoreDescriptor cd) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
+
       currentlyLoadingCores.add(cd.getName());
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
   // cores marked as loading will block on getCore
   public void markCoreAsNotLoading(CoreDescriptor cd) {
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
       currentlyLoadingCores.remove(cd.getName());
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
@@ -378,10 +463,12 @@ class SolrCores implements SolrInfoBean {
   public void waitForLoadingCoresToFinish(long timeoutMs) {
     long time = System.nanoTime();
     long timeout = time + TimeUnit.NANOSECONDS.convert(timeoutMs, TimeUnit.MILLISECONDS);
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
+
       while (!currentlyLoadingCores.isEmpty()) {
         try {
-          modifyLock.wait(500);
+          WRITE_LOCK_CONDITION.await(500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
@@ -390,6 +477,8 @@ class SolrCores implements SolrInfoBean {
           break;
         }
       }
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
@@ -397,10 +486,12 @@ class SolrCores implements SolrInfoBean {
   public void waitForLoadingCoreToFinish(String core, long timeoutMs) {
     long time = System.nanoTime();
     long timeout = time + TimeUnit.NANOSECONDS.convert(timeoutMs, TimeUnit.MILLISECONDS);
-    synchronized (modifyLock) {
+    READ_WRITE_LOCK.writeLock().lock();
+    try {
+
       while (isCoreLoading(core)) {
         try {
-          modifyLock.wait(500);
+          WRITE_LOCK_CONDITION.await(500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
@@ -409,6 +500,8 @@ class SolrCores implements SolrInfoBean {
           break;
         }
       }
+    } finally {
+      READ_WRITE_LOCK.writeLock().unlock();
     }
   }
 
