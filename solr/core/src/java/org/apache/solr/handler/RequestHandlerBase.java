@@ -252,8 +252,9 @@ public abstract class RequestHandlerBase
     AttributedLongTimer.MetricTimer timer = metrics.requestTimes.start();
     try {
       TestInjection.injectLeaderTragedy(req.getCore());
-      if (pluginInfo != null && pluginInfo.attributes.containsKey(USEPARAM))
+      if (pluginInfo != null && pluginInfo.attributes.containsKey(USEPARAM)) {
         req.getContext().put(USEPARAM, pluginInfo.attributes.get(USEPARAM));
+      }
       SolrPluginUtils.setDefaults(this, req, defaults, appends, invariants);
       req.getContext().remove(USEPARAM);
       rsp.setHttpCaching(httpCaching);
