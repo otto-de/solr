@@ -16,24 +16,18 @@ been submitted.
 > [!NOTE]
 > ✅ checked issues have been successfully merged to upstream\
 > ⏳ waiting for approval\
-> ✨ new fix, needs to filed and pull requested
+> ✨ new fix, needs to filed and pull requested\
+> ❌ discarded\
 
 * ⏳ [SOLR-10059](https://issues.apache.org/jira/browse/SOLR-10059) In SolrCloud, every 
   fq added via `<lst name="appends">` is computed twice. This breaks the collapse filter 
   if configured. Our fix turns this in a different direction, and 
-  [sanitizes macros in appended fq parameters](/otto-de/solr/tree/feature/SOLR-10059)
-* ✨ [SOLR-17334](https://github.com/apache/solr/pull/2527) Minor bugs in Solr 
+  [sanitizes macros in appended fq parameters](/otto-de/solr/tree/feature/10/SOLR-10059)
+* ⏳ [SOLR-17334](https://issues.apache.org/jira/browse/SOLR-17334) Minor bugs in Solr 
   dedicated coordinator mode. Fix access to the root resource and allow coordinator
-  requests outside of the `/select` handler
-
-#### Pending fixes
-
-* ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores
-
-#### Upcoming fixes
-
-* ✨ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler) Add an
-instrumented `HttpShardHandlerFactory`
+  requests outside of the `/select` handler. There are [two](https://github.com/apache/solr/pull/2527) [PRs](https://github.com/apache/solr/pull/2672) that we need to follow
+  to get this issue resolved.
+* ⏳ [SOLR-16497](https://issues.apache.org/jira/browse/SOLR-16497) Allow finer grained locking in SolrCores ([PR](https://github.com/apache/solr/pull/1155))
 
 
 #### Merged fixes
@@ -51,8 +45,9 @@ instrumented `HttpShardHandlerFactory`
   thrown in replication
 * ✅ [SOLR-16489](https://issues.apache.org/jira/browse/SOLR-16489) CaffeineCache puts thread 
   into infinite loop
-* ✅ [SOLR-16515](https://issues.apache.org/jira/browse/SOLR-16515) Remove synchronized access to 
-  cachedOrdMaps in SlowCompositeReaderWrapper
+* ✅ [SOLR-16515](https://issues.apache.org/jira/browse/SOLR-16515) Remove synchronized access to cachedOrdMaps in SlowCompositeReaderWrapper
+* ❌ [SOLR-xxxx](https://github.com/otto-de/solr/commits/feature/instrumented-shardhandler)
+ Add an instrumented `HttpShardHandlerFactory`
 
 ## 👩‍💻 Using this fork repository
 
@@ -74,7 +69,7 @@ add the GitHub Maven Package Repository to your Maven or Gradle file.
 Docker images are published for both `arm64` and `amd64` architectures:
 
 ```bash
-docker run -itp 8983:8983 ghcr.io/otto-de/solr:9.10.1
+docker run -itp 8983:8983 ghcr.io/otto-de/solr:10.0.0
 ```
 
 > [!NOTE]
@@ -116,12 +111,19 @@ git remote add upstream https://github.com/apache/solr.git
 git fetch upstream
 ```
 
-Solr 9 is a JDK11 project. Please make your adjustment using a
-recent JDK11:
+Configure a recent and approriate JDK in the terminal ...
 
-```bash
-sdk use java 11.0.30-tem
+| Solr 9                     | Solr 10                    |
+| -------------------------- | -------------------------- |
+| `sdk use java 11.0.30-tem` | `sdk use java 21.0.10-tem` |
+
+... and you IDE (example for VSCode and Solr 10):
+
+```json
+"java.jdt.ls.java.home": "/Users/torsten.koester/.sdkman/candidates/java/21.0.10-tem",
+"java.import.gradle.java.home": "/Users/torsten.koester/.sdkman/candidates/java/21.0.10-tem"
 ```
+
 
 ### 🔁 Releasing a new patch level version
 
@@ -145,25 +147,26 @@ git push origin candidates/branch_9_6 --force
 5. Run `./gradlew check`
 6. Push changes to candidate branch
 
-### 🎯 Releasing a new minor version
+### 🎯 Releasing a new major/minor version
 
-If you want to release a new bugfix version of a new Solr release
-(say `9.8.0-otto-de.1` over `9.5.0-otto-de.5`), follow these steps.
+If you want to release a new major/minor/bugfix version of a new
+Solr release (say `9.8.0-otto-de.1` over `9.5.0-otto-de.5`), follow 
+these steps.
 
-1. __Fork the Solr minor version release branch__, e.g. `branch_9_10`
+1. __Fork the Solr minor version release branch__, e.g. `branch_10_0`
    into our fork repository
 
 ```bash
 $ git fetch upstream
-$ git checkout branch_9_10
-$ git push origin branch_9_10
+$ git checkout branch_10_0
+$ git push origin branch_10_0
 ```
 
-2. __Create a bugfix branch__ `candiates/branch_9_10` branching off
+2. __Create a bugfix branch__ `candiates/branch_10_0` branching off
    the Solr minor release branch
 
 ```bash
-$ git checkout -b candidates/branch_9_10
+$ git checkout -b candidates/branch_10_0
 ```
 
 3. __Add our test and release Github Action Workflows__ to your 
@@ -178,10 +181,10 @@ $ curl -fsLo .github/workflows/release.yaml \
 $ git add .github/workflows/branch-test.yaml
 $ git add .github/workflows/release.yaml
 $ git commit -m "Add branch test and release action"
-$ git push origin candidates/branch_9_10
+$ git push origin candidates/branch_10_0
 ```
 
-4. __Cherry pick all fixes from the `features/**` branches__ to our 
+4. __Cherry pick all fixes from the `features/10/**` branches__ to our 
    candidate branch.  For each fix, verify that they are still needed!
    Some may have been merged in the meantime!
    After each cherry-pick make sure things integrate 
@@ -189,19 +192,16 @@ $ git push origin candidates/branch_9_10
 
 ```bash
 # [SOLR-10059]
-$ git cherry-pick a82b500d3c633621b0062698f540c2974a920fbb && ./gradlew clean compileJava compileTestJava
-
-# instrumented shard handler
-$ git cherry-pick 5091131251e8995c16606d2a6555290fc3b2735c && ./gradlew clean compileJava compileTestJava
+$ git cherry-pick 52d2cbe && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-17334] Allow coordinator requests outside of /select
-$ git cherry-pick cdd71a06c3e2109bf8151217b7ea036efe18655b && ./gradlew clean compileJava compileTestJava
+$ git cherry-pick 0b02bc7 && ./gradlew clean compileJava compileTestJava
 
 # [SOLR-16497] Finer grained locking
-$ git cherry-pick 9a514ee7fea55c769d410a9aa5424d9745cea580 && ./gradlew clean compileJava compileTestJava
+$ git cherry-pick e24c741 && ./gradlew clean compileJava compileTestJava
 
 # done
-$ git push origin candidates/branch_9_10
+$ git push origin candidates/branch_10_0
 ```
 
 Every push triggers the [Branch Test GitHub Action](https://github.com/otto-de/solr/actions/workflows/branch-test.yaml)
