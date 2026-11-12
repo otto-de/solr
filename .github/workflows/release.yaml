@@ -86,6 +86,13 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          java-package: jdk
+
       - uses: actions/cache@v4
         with:
           path: |
@@ -101,7 +108,7 @@ jobs:
         env:
           SOLR_DOCKER_IMAGE_REPO: ${{ github.repository }}
           SOLR_DOCKER_IMAGE_TAG: ${{ env.VERSION }}
-          SOLR_DOCKER_BASE_IMAGE: eclipse-temurin:25-jre-jammy
+          SOLR_DOCKER_BASE_IMAGE: eclipse-temurin:21-jre-jammy
           SOLR_DOCKER_DIST: full
 
       - name: Prepare multi-arch Docker build
